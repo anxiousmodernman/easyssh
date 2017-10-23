@@ -7,11 +7,12 @@ package easyssh
 import (
 	"bufio"
 	"fmt"
-	"golang.org/x/crypto/ssh"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"golang.org/x/crypto/ssh"
 )
 
 var keyMap map[string][]byte = make(map[string][]byte)
@@ -24,11 +25,12 @@ var keyMap map[string][]byte = make(map[string][]byte)
 // Note: easyssh looking for private key in user's home directory (ex. /home/john + Key).
 // Then ensure your Key begins from '/' (ex. /.ssh/id_rsa)
 type MakeConfig struct {
-	User     string
-	Server   string
-	Key      string
-	Port     string
-	Password string
+	User            string
+	Server          string
+	Key             string
+	Port            string
+	Password        string
+	HostKeyCallback ssh.HostKeyCallback
 }
 
 // returns ssh.Signer from user you running app home path + cutted key path.
@@ -81,8 +83,9 @@ func (ssh_conf *MakeConfig) connect() (*ssh.Session, error) {
 		auths = append(auths, ssh.PublicKeys(pubkey))
 	}
 	config := &ssh.ClientConfig{
-		User: ssh_conf.User,
-		Auth: auths,
+		User:            ssh_conf.User,
+		Auth:            auths,
+		HostKeyCallback: ssh_conf.HostKeyCallback,
 	}
 
 	client, err := ssh.Dial("tcp", ssh_conf.Server+":"+ssh_conf.Port, config)
